@@ -6,7 +6,23 @@ const Building = require('../models/Building');
 // @access  Public
 exports.getAllBuildings = async (req, res) => {
   try {
-    const buildings = await Building.find({});
+    const { name, address, staffName, staffPhone } = req.query;
+    const query = { active: true };
+
+    if (name) {
+      query.name = { $regex: name, $options: 'i' };
+    }
+    if (address) {
+      query.address = { $regex: address, $options: 'i' };
+    }
+    if (staffName) {
+      query.staffName = { $regex: staffName, $options: 'i' };
+    }
+    if (staffPhone) {
+      query.staffPhone = { $regex: staffPhone, $options: 'i' };
+    }
+
+    const buildings = await Building.find(query);
     res.status(200).json(buildings);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -19,7 +35,7 @@ exports.getAllBuildings = async (req, res) => {
 exports.getBuildingById = async (req, res) => {
   try {
     const building = await Building.findById(req.params.id);
-    if (building) {
+    if (building && building.active) {
       res.status(200).json(building);
     } else {
       res.status(404).json({ message: 'Building not found' });
@@ -33,13 +49,31 @@ exports.getBuildingById = async (req, res) => {
 // @route   POST /api/buildings
 // @access  Private/Admin
 exports.createBuilding = async (req, res) => {
-  const { name, address, location } = req.body;
+  const {
+    name,
+    address,
+    gps,
+    owner,
+    staffId,
+    staffName,
+    staffPhone,
+    notes,
+    images,
+    providers,
+  } = req.body;
 
   try {
     const building = await Building.create({
       name,
       address,
-      location,
+      gps,
+      owner,
+      staffId,
+      staffName,
+      staffPhone,
+      notes,
+      images,
+      providers,
     });
 
     if (building) {
@@ -59,10 +93,17 @@ exports.updateBuilding = async (req, res) => {
   try {
     const building = await Building.findById(req.params.id);
 
-    if (building) {
+    if (building && building.active) {
       building.name = req.body.name || building.name;
       building.address = req.body.address || building.address;
-      building.location = req.body.location || building.location;
+      building.gps = req.body.gps || building.gps;
+      building.owner = req.body.owner || building.owner;
+      building.staffId = req.body.staffId || building.staffId;
+      building.staffName = req.body.staffName || building.staffName;
+      building.staffPhone = req.body.staffPhone || building.staffPhone;
+      building.notes = req.body.notes || building.notes;
+      building.images = req.body.images || building.images;
+      building.providers = req.body.providers || building.providers;
 
       const updatedBuilding = await building.save();
       res.status(200).json(updatedBuilding);
@@ -74,7 +115,7 @@ exports.updateBuilding = async (req, res) => {
   }
 };
 
-// @desc    Delete a building
+// @desc    Delete a building (soft delete)
 // @route   DELETE /api/buildings/:id
 // @access  Private/Admin
 exports.deleteBuilding = async (req, res) => {
@@ -82,8 +123,15 @@ exports.deleteBuilding = async (req, res) => {
     const building = await Building.findById(req.params.id);
 
     if (building) {
-      await building.deleteOne();
-      res.status(200).json({ message: 'Building removed' });
+      // Soft delete by default
+      if (building.totalUnits === 0) {
+        await building.deleteOne();
+        res.status(200).json({ message: 'Building removed permanently' });
+      } else {
+        building.active = false;
+        await building.save();
+        res.status(200).json({ message: 'Building deactivated' });
+      }
     } else {
       res.status(404).json({ message: 'Building not found' });
     }

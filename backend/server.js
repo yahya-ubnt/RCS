@@ -3,10 +3,15 @@ const express = require('express');
 const connectDB = require('./config/db');
 
 // Import routes
-const agentRoutes = require('./routes/agentRoutes');
+const leadRoutes = require('./routes/leadRoutes');
+const staffRoutes = require('./routes/staffRoutes');
 const referralRoutes = require('./routes/referralRoutes');
 const buildingRoutes = require('./routes/buildingRoutes');
 const unitRoutes = require('./routes/unitRoutes');
+
+// Mount unit routes under building routes
+buildingRoutes.use('/:buildingId/units', unitRoutes);
+
 const payoutRoutes = require('./routes/payoutRoutes');
 const commissionRoutes = require('./routes/commissionRoutes');
 const adminRoutes = require('./routes/adminRoutes'); // For authentication
@@ -26,7 +31,8 @@ app.get('/', (req, res) => {
 });
 
 // Mount routes
-app.use('/api/agents', agentRoutes);
+app.use('/api/leads', leadRoutes);
+app.use('/api/staff', staffRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/buildings', buildingRoutes);
 app.use('/api/units', unitRoutes);

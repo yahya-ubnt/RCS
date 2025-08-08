@@ -4,11 +4,19 @@ const mongoose = require('mongoose');
 const buildingSchema = new mongoose.Schema({
   name: { type: String, required: true },
   address: { type: String, required: true },
-  location: {
-    latitude: { type: Number },
-    longitude: { type: Number },
+  gps: {
+    lat: { type: Number },
+    lng: { type: Number },
   },
-  // Add other building-specific fields here
+  owner: { type: String },
+  staffId: { type: String },
+  staffName: { type: String },
+  staffPhone: { type: String },
+  notes: { type: String },
+  images: [{ type: String }],
+  providers: [{ type: String }],
+  totalUnits: { type: Number, default: 0 },
+  active: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
 });
 

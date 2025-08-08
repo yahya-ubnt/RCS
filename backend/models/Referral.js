@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 const referralSchema = new mongoose.Schema({
-  agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true },
+  agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
   referredName: { type: String, required: true },
   referredContact: { type: String, required: true },
   status: { type: String, enum: ['pending', 'approved', 'rejected', 'converted'], default: 'pending' },

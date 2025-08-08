@@ -2,10 +2,12 @@
 const mongoose = require('mongoose');
 
 const unitSchema = new mongoose.Schema({
-  building: { type: mongoose.Schema.Types.ObjectId, ref: 'Building', required: true },
-  unitNumber: { type: String, required: true },
-  status: { type: String, enum: ['available', 'occupied', 'maintenance'], default: 'available' },
-  // Add other unit-specific fields here
+  buildingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Building', required: true },
+  label: { type: String, required: true },
+  visitStatus: { type: String, enum: ['Visited', 'Not Visited'], default: 'Not Visited' },
+  provider: { type: String },
+  comments: { type: String },
+  active: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
 });
 

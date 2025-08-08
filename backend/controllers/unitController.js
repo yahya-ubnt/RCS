@@ -1,12 +1,24 @@
 // backend/controllers/unitController.js
 const Unit = require('../models/Unit');
+const Building = require('../models/Building');
 
-// @desc    Get all units
-// @route   GET /api/units
+// @desc    Get all units for a building
+// @route   GET /api/buildings/:buildingId/units
 // @access  Public
 exports.getAllUnits = async (req, res) => {
   try {
-    const units = await Unit.find({}).populate('building');
+    const { visitStatus, provider } = req.query;
+    const query = { buildingId: req.params.buildingId, active: true };
+
+    if (visitStatus) {
+      query.visitStatus = visitStatus;
+    }
+
+    if (provider) {
+      query.provider = { $regex: provider, $options: 'i' };
+    }
+
+    const units = await Unit.find(query);
     res.status(200).json(units);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -14,11 +26,11 @@ exports.getAllUnits = async (req, res) => {
 };
 
 // @desc    Get single unit by ID
-// @route   GET /api/units/:id
+// @route   GET /api/buildings/:buildingId/units/:unitId
 // @access  Public
 exports.getUnitById = async (req, res) => {
   try {
-    const unit = await Unit.findById(req.params.id).populate('building');
+    const unit = await Unit.findOne({ _id: req.params.unitId, buildingId: req.params.buildingId, active: true });
     if (unit) {
       res.status(200).json(unit);
     } else {
@@ -29,18 +41,28 @@ exports.getUnitById = async (req, res) => {
   }
 };
 
-// @desc    Create a new unit
-// @route   POST /api/units
+// @desc    Create a new unit for a building
+// @route   POST /api/buildings/:buildingId/units
 // @access  Private/Admin
 exports.createUnit = async (req, res) => {
-  const { building, unitNumber, status } = req.body;
+  const { label, provider, comments } = req.body;
+  const { buildingId } = req.params;
 
   try {
+    const building = await Building.findById(buildingId);
+    if (!building) {
+      return res.status(404).json({ message: 'Building not found' });
+    }
+
     const unit = await Unit.create({
-      building,
-      unitNumber,
-      status,
+      buildingId,
+      label,
+      provider,
+      comments,
     });
+
+    building.totalUnits += 1;
+    await building.save();
 
     if (unit) {
       res.status(201).json(unit);
@@ -53,16 +75,17 @@ exports.createUnit = async (req, res) => {
 };
 
 // @desc    Update a unit
-// @route   PUT /api/units/:id
+// @route   PUT /api/buildings/:buildingId/units/:unitId
 // @access  Private/Admin
 exports.updateUnit = async (req, res) => {
   try {
-    const unit = await Unit.findById(req.params.id);
+    const unit = await Unit.findOne({ _id: req.params.unitId, buildingId: req.params.buildingId });
 
-    if (unit) {
-      unit.building = req.body.building || unit.building;
-      unit.unitNumber = req.body.unitNumber || unit.unitNumber;
-      unit.status = req.body.status || unit.status;
+    if (unit && unit.active) {
+      unit.label = req.body.label || unit.label;
+      unit.visitStatus = req.body.visitStatus || unit.visitStatus;
+      unit.provider = req.body.provider || unit.provider;
+      unit.comments = req.body.comments || unit.comments;
 
       const updatedUnit = await unit.save();
       res.status(200).json(updatedUnit);
@@ -74,16 +97,24 @@ exports.updateUnit = async (req, res) => {
   }
 };
 
-// @desc    Delete a unit
-// @route   DELETE /api/units/:id
+// @desc    Delete a unit (soft delete)
+// @route   DELETE /api/buildings/:buildingId/units/:unitId
 // @access  Private/Admin
 exports.deleteUnit = async (req, res) => {
   try {
-    const unit = await Unit.findById(req.params.id);
+    const unit = await Unit.findOne({ _id: req.params.unitId, buildingId: req.params.buildingId });
 
     if (unit) {
-      await unit.deleteOne();
-      res.status(200).json({ message: 'Unit removed' });
+      unit.active = false;
+      await unit.save();
+
+      const building = await Building.findById(req.params.buildingId);
+      if (building) {
+        building.totalUnits -= 1;
+        await building.save();
+      }
+
+      res.status(200).json({ message: 'Unit deactivated' });
     } else {
       res.status(404).json({ message: 'Unit not found' });
     }

@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 const payoutSchema = new mongoose.Schema({
-  agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Agent', required: true },
+  agent: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff', required: true },
   amount: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
   transactionId: { type: String },
