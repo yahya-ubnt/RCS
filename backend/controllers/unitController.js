@@ -45,7 +45,7 @@ exports.getUnitById = async (req, res) => {
 // @route   POST /api/buildings/:buildingId/units
 // @access  Private/Admin
 exports.createUnit = async (req, res) => {
-  const { label, provider, comments } = req.body;
+  const { _id, label, provider, comments } = req.body;
   const { buildingId } = req.params;
 
   try {
@@ -55,6 +55,7 @@ exports.createUnit = async (req, res) => {
     }
 
     const unit = await Unit.create({
+      _id,
       buildingId,
       label,
       provider,

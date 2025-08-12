@@ -2,16 +2,20 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Buildings from '../pages/Buildings';
-import Agents from '../pages/Agents';
 import Dashboard from '../pages/Dashboard';
+import Login from '../pages/Login';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/buildings" element={<Buildings />} />
-      <Route path="/agents" element={<Agents />} />
-      {/* Add other routes here */}
+      <Route path="/login" element={<Login />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/buildings" element={<Buildings />} />
+        {/* Add other protected routes here */}
+      </Route>
+      {/* Add other public routes here */}
     </Routes>
   );
 };

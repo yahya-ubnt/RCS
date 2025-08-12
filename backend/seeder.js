@@ -1,72 +1,45 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const Staff = require('./models/Staff');
+const User = require('./models/User');
+
 const bcrypt = require('bcryptjs');
 const Building = require('./models/Building');
 const Unit = require('./models/Unit');
 const Lead = require('./models/Lead');
 const connectDB = require('./config/db');
 
-dotenv.config();
+dotenv.config({ path: './backend/.env' });
 connectDB();
 
 const importData = async () => {
   try {
-    // await Staff.deleteMany();
-    // await Building.deleteMany();
-    // await Unit.deleteMany();
-    // await Lead.deleteMany();
+    await User.deleteMany();
 
-    const staffData = await Promise.all([
+    const users = await Promise.all([
       {
-        _id: 'staff_001',
         fullName: 'Admin User',
         email: 'admin@example.com',
         phone: '+254700000000',
-        password: await bcrypt.hash('password123', 10),
-        role: 'Agent',
-        status: 'Active',
-      },
-      {
-        _id: 'staff_002',
-        fullName: 'John Mwangi',
-        email: 'john.mwangi@example.com',
-        phone: '+254712345678',
-        password: await bcrypt.hash('password123', 10),
-        role: 'Caretaker',
-        status: 'Active',
-      },
-      {
-        _id: 'staff_003',
-        fullName: 'Jane Doe',
-        email: 'jane.doe@example.com',
-        phone: '+254787654321',
-        password: await bcrypt.hash('password123', 10),
-        role: 'Agent',
-        status: 'Active',
-      },
-      {
-        _id: 'staff_004',
-        fullName: 'Peter Jones',
-        email: 'peter.jones@example.com',
-        phone: '+254722222222',
-        password: await bcrypt.hash('password123', 10),
-        role: 'Agent',
-        status: 'Inactive',
+        password: await bcrypt.hash('Abuhureira12', 10),
+        isAdmin: true,
       },
     ]);
-    await Staff.insertMany(staffData);
+    const createdUsers = await User.insertMany(users);
+    const adminUser = createdUsers[0];
+
+    await Building.deleteMany();
+    await Unit.deleteMany();
+    await Lead.deleteMany();
+
+    
 
     const buildingData = [
       {
-        _id: 'bld_101',
         name: 'Sunrise Apartments',
         address: '123 Ngong Road, Nairobi',
         gps: { lat: -1.2921, lng: 36.8219 },
         owner: 'Sunrise Holdings Ltd.',
-        staffId: 'staff_001',
-        staffName: 'John Mwangi',
-        staffPhone: '+254712345678',
+        staffId: adminUser._id,
         notes: 'Main gate is green. Intercom at the entrance.',
         images: ['/images/sunrise_apartments_1.jpg'],
         providers: ['Safaricom', 'Zuku'],
@@ -74,14 +47,11 @@ const importData = async () => {
         active: true,
       },
       {
-        _id: 'bld_102',
         name: 'Westview Towers',
         address: '456 Waiyaki Way, Nairobi',
         gps: { lat: -1.2833, lng: 36.8167 },
         owner: 'Westview Properties',
-        staffId: 'staff_002',
-        staffName: 'Jane Doe',
-        staffPhone: '+254787654321',
+        staffId: adminUser._id,
         notes: 'Parking available at the back.',
         images: [],
         providers: ['Mediatek', 'JTL'],
@@ -89,12 +59,13 @@ const importData = async () => {
         active: true,
       },
     ];
-    await Building.insertMany(buildingData);
+    const createdBuildings = await Building.insertMany(buildingData);
+    const bld101 = createdBuildings[0];
+    const bld102 = createdBuildings[1];
 
     const unitData = [
       {
-        _id: 'unit_A1_101',
-        buildingId: 'bld_101',
+        buildingId: bld101._id,
         label: 'A1',
         visitStatus: 'Visited',
         provider: 'Safaricom',
@@ -102,8 +73,7 @@ const importData = async () => {
         active: true,
       },
       {
-        _id: 'unit_A2_101',
-        buildingId: 'bld_101',
+        buildingId: bld101._id,
         label: 'A2',
         visitStatus: 'Not Visited',
         provider: null,
@@ -111,8 +81,7 @@ const importData = async () => {
         active: true,
       },
       {
-        _id: 'unit_B1_102',
-        buildingId: 'bld_102',
+        buildingId: bld102._id,
         label: 'B1',
         visitStatus: 'Visited',
         provider: 'Mediatek',
@@ -120,42 +89,42 @@ const importData = async () => {
         active: true,
       },
     ];
-    await Unit.insertMany(unitData);
+    const createdUnits = await Unit.insertMany(unitData);
+    const unitA1_101 = createdUnits[0];
+    const unitA2_101 = createdUnits[1];
+    const unitB1_102 = createdUnits[2];
 
     const leadData = [
       {
-        _id: 'lead_001',
         fullName: 'Alice Wonder',
-        phone: '+254711111111',
-        propertyId: 'bld_101',
-        unitId: 'unit_A2_101',
+        phoneNumber: '+254711111111',
+        propertyId: bld101._id,
+        unitId: unitA2_101._id,
         source: 'whatsapp',
         status: 'new',
-        assignedTo: 'staff_002',
+        assignedTo: adminUser._id,
         notes: 'Reached out via WhatsApp after seeing a poster.',
         createdAt: new Date('2025-08-10T10:00:00Z'),
       },
       {
-        _id: 'lead_002',
         fullName: 'Bob Builder',
-        phone: '+254733333333',
-        propertyId: 'bld_102',
-        unitId: 'unit_B1_102',
+        phoneNumber: '+254733333333',
+        propertyId: bld102._id,
+        unitId: unitB1_102._id,
         source: 'manual',
         status: 'in_progress',
-        assignedTo: 'staff_002',
+        assignedTo: adminUser._id,
         notes: 'Met during a door-to-door visit. Wants a call back next week.',
         createdAt: new Date('2025-08-09T14:30:00Z'),
       },
       {
-        _id: 'lead_003',
         fullName: 'Charlie Chaplin',
-        phone: '+254744444444',
-        propertyId: 'bld_101',
+        phoneNumber: '+254744444444',
+        propertyId: bld101._id,
         unitId: null,
         source: 'sms',
         status: 'converted',
-        assignedTo: 'staff_003',
+        assignedTo: adminUser._id,
         notes: 'Converted to a paying customer.',
         createdAt: new Date('2025-08-08T12:00:00Z'),
       },
@@ -172,10 +141,10 @@ const importData = async () => {
 
 const destroyData = async () => {
   try {
-    // await Staff.deleteMany();
-    // await Building.deleteMany();
-    // await Unit.deleteMany();
-    // await Lead.deleteMany();
+    await User.deleteMany();
+    await Building.deleteMany();
+    await Unit.deleteMany();
+    await Lead.deleteMany();
 
     console.log('Data Destroyed!');
     process.exit();

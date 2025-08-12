@@ -16,11 +16,11 @@ Manage caretakers and agents (staff) who can be assigned to buildings. The build
 ---
 
 ## Fields
-- **id** — Unique identifier
+- **_id** — `String` — *required*, Unique identifier
 - **fullName** — `string` — *required*
 - **phone** — `string` — *required`, unique, validated
 - **role** — `enum` — *required* — Values: `Caretaker`, `Agent`
-- **assignedBuildings** — `string[]` (array of building IDs) — *optional*
+- **assignedBuildings** — `[String]` (array of building IDs) — *optional*
 - **status** — `enum` — `Active` | `Inactive`
 - **createdAt**, **updatedAt**
 
@@ -37,7 +37,7 @@ Manage caretakers and agents (staff) who can be assigned to buildings. The build
 **Save Actions**
 - Create:
 
-POST /api/staff Body: { "fullName": "Mwikali Jane", "phone": "+254712345678", "role": "Caretaker" }
+POST /api/staff Body: { "_id": "staff_987", "fullName": "Mwikali Jane", "phone": "+254712345678", "role": "Caretaker" }
 
 - Update:
 
@@ -66,9 +66,9 @@ DELETE /api/staff/:id
 ## API Endpoints (Staff)
 - `GET /api/staff` → list staff (supports query by role, active)
 - `GET /api/staff/:id` → get staff
-- `POST /api/staff` → create staff
-- `PUT /api/staff/:id` → update staff
-- `DELETE /api/staff/:id` → delete (soft/hard according to policy)
+- `POST /api/staff` (Auth)→ create staff
+- `PUT /api/staff/:id` (Auth)→ update staff
+- `DELETE /api/staff/:id` (Auth)→ delete (soft/hard according to policy)
 
 ---
 

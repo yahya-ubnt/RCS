@@ -1,90 +1,81 @@
 # Units Module Specification
 
 ## Purpose
-Track door-to-door progress at the unit level for each building: visits, provider per unit, and notes from field staff. Units are created per building and used by field teams to mark progress.
+Manage individual unit information within buildings, specifically for door-to-door campaign tracking.
 
 ---
 
-## View Units (per Building)
-- Units displayed inside Building Profile → Unit Section.
-- Table columns:
-  - Unit Label (e.g., A1, B2)
-  - Visit Status (Visited | Not Visited)
-  - Provider (Mediatek | Safaricom | Other)
-  - Comments (free text)
-  - Actions (Edit | Delete)
+## 1. View All Buildings (for Unit Management)
+**Purpose:** To allow users to select a building to manage its units.
+**Display:** Similar to the "View All Buildings" section in the Buildings module.
+**Columns:**
+- Building Name
+- Address / Location
+- Total Units (from Building data)
+- Actions: **Manage Units** (button/link)
 
-**Filters**
-- Visited / Not Visited
-- By Provider
+**Search & Filter:**
+- Building Name
+- Location
 
----
-
-## Add New Unit
-**Form Fields**
-- **Unit Label** — `string` — *required*
-- **Provider** — `string` — *optional* (choose from list or free text)
-- **Comments** — `string` — *optional*
-
-**Save Action**
-
-POST /api/buildings/:buildingId/units Body: { "label": "A1", "provider": "Mediatek", "comments": "No one home at first visit" }
-
-Validation:
-- `label` required, unique per building.
+**UI Notes:**
+- Responsive table/grid.
+- Clicking "Manage Units" navigates to the "Manage Units for a Specific Building" view.
 
 ---
 
-## Edit Unit
-- Update label, provider, comments, or visit status.
-- Save action:
+## 2. Manage Units for a Specific Building
+**Purpose:** To provide a spreadsheet-like interface for tracking individual unit status and comments within a selected building.
+**Display:** A dynamic form/table, generating rows based on the `totalUnits` of the selected building.
 
-PUT /api/buildings/:buildingId/units/:unitId
+**Header Information (for the selected building):**
+- Building Name
+- Address
+- Total Units
 
----
+**Unit Entry Fields (for each unit, 1 to Total Units):**
+- **Unit Number/Label** — `string` (e.g., 1, 2, A1, B2) — *auto-generated/pre-filled based on total units, editable for custom labels*
+- **Visited Status** — `boolean` (checkbox/toggle: Visited / Not Visited) — *required*
+- **Provider Status** — `string` (dropdown: Mediatek, Safaricom, Zuku, Other, Not Applicable) — *required*
+- **Comments** — `string` (text area) — *optional*
 
-## Delete Unit
-- Default: **Soft delete** (retain history). Option for hard delete.
-- Delete action:
+**Save Action:**
+- A single save action for all units in the building.
+- `PUT /api/buildings/:id/units` or `POST /api/units/bulk` (to be determined based on backend design, likely a bulk update/create)
 
-DELETE /api/buildings/:buildingId/units/:unitId
+**Validation:**
+- All units must have a `Visited Status` and `Provider Status` selected before saving.
 
----
-
-## Unit Actions (UX Requirements)
-- Inline status toggle: mark unit as Visited / Not Visited quickly during fieldwork.
-- Quick comment input (single-line) for short notes.
-- Ability to change provider if discovered (e.g., tenant says they use different ISP).
-- Bulk operations: mark multiple units as visited (optional).
+**UI Notes:**
+- Spreadsheet-like interface for easy data entry.
+- Auto-save functionality (optional, but recommended for large forms).
+- Clear visual indicators for visited/not visited status.
 
 ---
 
 ## API Endpoints (Units)
-- `GET /api/buildings/:buildingId/units` → list units for building
-- `GET /api/buildings/:buildingId/units/:unitId` → get one unit
-- `POST /api/buildings/:buildingId/units` → create unit
-- `PUT /api/buildings/:buildingId/units/:unitId` → update unit
-- `DELETE /api/buildings/:buildingId/units/:unitId` → delete unit
+- `GET /api/buildings/:id/units` → Get all units for a specific building.
+- `PUT /api/buildings/:id/units` → Bulk update/create units for a specific building.
+- `GET /api/units/:id` → Get a single unit by ID (if needed for future individual unit editing).
+- `PUT /api/units/:id` → Update a single unit by ID (if needed for future individual unit editing).
 
 ---
 
 ## Data Model (example)
 **Unit**
-
-json
+```json
 {
-  "_id": "unitA1",
-  "buildingId": "bld123",
-  "label": "A1",
-  "visitStatus": "Not Visited",    // "Visited" or "Not Visited"
-  "provider": "Mediatek",
-  "comments": "No answer on first attempt",
-  "active": true,
-  "createdAt": "2025-08-08T14:00:00Z"
+	"_id": "unit_123",
+	"buildingId": "bld_abc",
+	"unitNumber": "A1",
+	"visited": true,
+	"provider": "Mediatek",
+	"comments": "Customer interested in 10Mbps package.",
+	"createdAt": "2025-08-12T10:00:00Z",
+	"updatedAt": "2025-08-12T10:30:00Z"
 }
+```
 
-Notes
-
-Unit label uniqueness constraint scoped to a buildingId.
-
-Keep timestamps for visit history if you want audit trail (optional enhancement).
+Notes:
+- `unitNumber` can be a custom label or a sequential number.
+- `visited` and `provider` are key tracking fields.

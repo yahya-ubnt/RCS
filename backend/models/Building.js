@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 
 const buildingSchema = new mongoose.Schema({
+  
   name: { type: String, required: true },
   address: { type: String, required: true },
   gps: {
@@ -9,9 +10,16 @@ const buildingSchema = new mongoose.Schema({
     lng: { type: Number },
   },
   owner: { type: String },
-  staffId: { type: String },
   staffName: { type: String },
-  staffPhone: { type: String },
+  staffPhone: {
+    type: String,
+    validate: {
+      validator: function(v) {
+        return /^\+?\d{10,15}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    }
+  },
   notes: { type: String },
   images: [{ type: String }],
   providers: [{ type: String }],

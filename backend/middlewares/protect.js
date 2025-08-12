@@ -1,6 +1,5 @@
-// backend/middlewares/protect.js
 const jwt = require('jsonwebtoken');
-const Staff = require('../models/Staff');
+const User = require('../models/User');
 const { JWT_SECRET } = require('../config/env');
 
 const protect = async (req, res, next) => {
@@ -15,7 +14,7 @@ const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, JWT_SECRET);
 
       // Get user from the token
-      req.staff = await Staff.findById(decoded.id).select('-password');
+      req.user = await User.findById(decoded.id).select('-password');
 
       next();
     } catch (error) {
@@ -30,7 +29,7 @@ const protect = async (req, res, next) => {
 };
 
 const admin = (req, res, next) => {
-  if (req.staff && req.staff.isAdmin) {
+  if (req.user && req.user.isAdmin) {
     next();
   } else {
     res.status(403).json({ message: 'Not authorized as an admin' });

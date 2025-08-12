@@ -1,5 +1,5 @@
 // backend/controllers/buildingController.js
-const Building = require('../models/Building');
+const Building = require('../models/Building'); // Keep this import for staffId validation
 
 // @desc    Get all buildings
 // @route   GET /api/buildings
@@ -50,11 +50,11 @@ exports.getBuildingById = async (req, res) => {
 // @access  Private/Admin
 exports.createBuilding = async (req, res) => {
   const {
+    _id,
     name,
     address,
     gps,
     owner,
-    staffId,
     staffName,
     staffPhone,
     notes,
@@ -64,11 +64,11 @@ exports.createBuilding = async (req, res) => {
 
   try {
     const building = await Building.create({
+      _id,
       name,
       address,
       gps,
       owner,
-      staffId,
       staffName,
       staffPhone,
       notes,
@@ -98,7 +98,6 @@ exports.updateBuilding = async (req, res) => {
       building.address = req.body.address || building.address;
       building.gps = req.body.gps || building.gps;
       building.owner = req.body.owner || building.owner;
-      building.staffId = req.body.staffId || building.staffId;
       building.staffName = req.body.staffName || building.staffName;
       building.staffPhone = req.body.staffPhone || building.staffPhone;
       building.notes = req.body.notes || building.notes;

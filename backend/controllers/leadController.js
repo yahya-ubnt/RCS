@@ -6,14 +6,14 @@ const Lead = require('../models/Lead');
 // @access  Public
 exports.getAllLeads = async (req, res) => {
   try {
-    const { status, source, assignedTo, startDate, endDate, search } = req.query;
+    const { status, leadSource, assignedTo, startDate, endDate, search, buildingName, buildingLocation } = req.query;
     const query = {};
 
     if (status) {
       query.status = status;
     }
-    if (source) {
-      query.source = source;
+    if (leadSource) {
+      query.leadSource = leadSource;
     }
     if (assignedTo) {
       query.assignedTo = assignedTo;
@@ -21,14 +21,20 @@ exports.getAllLeads = async (req, res) => {
     if (startDate && endDate) {
       query.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
     }
+    if (buildingName) {
+      query.buildingName = { $regex: buildingName, $options: 'i' };
+    }
+    if (buildingLocation) {
+      query.buildingLocation = { $regex: buildingLocation, $options: 'i' };
+    }
     if (search) {
       query.$or = [
-        { fullName: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },
+        { phoneNumber: { $regex: search, $options: 'i' } },
       ];
     }
 
-    const leads = await Lead.find(query).populate('propertyId').populate('unitId').populate('assignedTo');
+    const leads = await Lead.find(query).populate('assignedTo');
     res.status(200).json(leads);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -40,7 +46,7 @@ exports.getAllLeads = async (req, res) => {
 // @access  Public
 exports.getLeadById = async (req, res) => {
   try {
-    const lead = await Lead.findById(req.params.id).populate('propertyId').populate('unitId').populate('assignedTo');
+    const lead = await Lead.findById(req.params.id).populate('assignedTo');
     if (lead) {
       res.status(200).json(lead);
     } else {
@@ -55,18 +61,19 @@ exports.getLeadById = async (req, res) => {
 // @route   POST /api/leads
 // @access  Private/Admin
 exports.createLead = async (req, res) => {
-  const { fullName, phone, propertyId, unitId, source, status, assignedTo, notes } = req.body;
+  const { name, phoneNumber, leadSource, buildingName, buildingLocation, status, assignedTo, notes, nextPaymentDate } = req.body;
 
   try {
     const lead = await Lead.create({
-      fullName,
-      phone,
-      propertyId,
-      unitId,
-      source,
+      name,
+      phoneNumber,
+      leadSource,
+      buildingName,
+      buildingLocation,
       status,
       assignedTo,
       notes,
+      nextPaymentDate,
     });
 
     if (lead) {
@@ -87,14 +94,15 @@ exports.updateLead = async (req, res) => {
     const lead = await Lead.findById(req.params.id);
 
     if (lead) {
-      lead.fullName = req.body.fullName || lead.fullName;
-      lead.phone = req.body.phone || lead.phone;
-      lead.propertyId = req.body.propertyId || lead.propertyId;
-      lead.unitId = req.body.unitId || lead.unitId;
-      lead.source = req.body.source || lead.source;
+      lead.name = req.body.name || lead.name;
+      lead.phoneNumber = req.body.phoneNumber || lead.phoneNumber;
+      lead.leadSource = req.body.leadSource || lead.leadSource;
+      lead.buildingName = req.body.buildingName || lead.buildingName;
+      lead.buildingLocation = req.body.buildingLocation || lead.buildingLocation;
       lead.status = req.body.status || lead.status;
       lead.assignedTo = req.body.assignedTo || lead.assignedTo;
       lead.notes = req.body.notes || lead.notes;
+      lead.nextPaymentDate = req.body.nextPaymentDate || lead.nextPaymentDate;
 
       const updatedLead = await lead.save();
       res.status(200).json(updatedLead);

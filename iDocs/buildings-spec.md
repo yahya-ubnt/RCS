@@ -35,19 +35,18 @@ Manage all building information for door-to-door campaigns and partner tracking.
 - **Address** — `string` — *required*
 - **GPS Coordinates** — `{ lat: number, lng: number }` — *optional*
 - **Owner / Landlord Name** — `string` — *optional*
-- **Assigned Caretaker/Agent** — `id` or `string` — *required* 
-	- UI: dropdown populated from Caretaker & Agent module (shows `Name — Phone`). 
-	- Optionally allow entering a phone number if person not yet created (system should prompt to create staff or create temp staff record).
-- **Caretaker/Agent Contact** — `string` — *required* (phone)
+- **Assigned Caretaker/Agent Name** — `string` — *required* (manually entered)
+- **Assigned Caretaker/Agent Contact** — `string` — *required* (phone, manually entered)
 - **Description / Notes** — `string` — *optional*
 - **Upload Building Image(s)** — file upload — *optional*
+- **Total Units** — `number` — *optional*
 - **Providers in Building** — `string[]` (multi-select or free text) — *optional*
 
 **Save Action**
 
 POST /api/buildings Content-Type: application/json
 
-{ "name": "Sunrise Apartments", "address": "Kilimani, Nairobi", "gps": { "lat": -1.2921, "lng": 36.8219 }, "owner": "John Doe", "staffId": "staff_abc123",     // selected Caretaker/Agent ID "staffPhone": "+254712345678", "notes": "Rooftop antenna installed", "images": ["url1.jpg"], "providers": ["Mediatek", "Zuku"] }
+{ "name": "Sunrise Apartments", "address": "Kilimani, Nairobi", "gps": { "lat": -1.2921, "lng": 36.8219 }, "owner": "John Doe", "staffId": "staff_abc123",     // selected Caretaker/Agent ID "staffPhone": "+254712345678", "notes": "Rooftop antenna installed", "images": ["url1.jpg"], "providers": ["Mediatek", "Zuku"], "totalUnits": 50 }
 
 **Validation**
 - `name` and `address` required.
@@ -74,25 +73,6 @@ PUT /api/buildings/:id
 - Caretaker/Agent Name + Contact (click-to-call / WhatsApp)
 - Providers in Building (chip list)
 
-**Unit Section** (displayed on same page)
-- Table columns:
-	- Unit Label (e.g., A1)
-	- Visit Status (Visited / Not Visited)
-	- Provider (Mediatek / Safaricom / Other)
-	- Comments (text)
-- Actions for each unit:
-	- Mark Visited / Not Visited
-	- Change Provider
-	- Add / Edit Comment
-- Filters available:
-	- Visited / Not Visited
-	- By Provider
-- Add New Unit button (opens Unit form)
-
-**Quick Operations**
-- Bulk-mark visited/unvisited (optional)
-- Export unit list CSV (optional)
-
 ---
 
 ## 5. Delete Building
@@ -107,9 +87,9 @@ DELETE /api/buildings/:id
 ## API Endpoints (Buildings)
 - `GET /api/buildings` → list all buildings (supports query filters)
 - `GET /api/buildings/:id` → get building by id (includes providers, staff reference, totalUnits)
-- `POST /api/buildings` → add new building
-- `PUT /api/buildings/:id` → update building
-- `DELETE /api/buildings/:id` → delete (soft/hard depending on backend logic)
+- `POST /api/buildings` (Auth)→ add new building
+- `PUT /api/buildings/:id` (Auth)→ update building
+- `DELETE /api/buildings/:id` (Auth)→ delete (soft/hard depending on backend logic)
 
 ---
 
@@ -117,12 +97,11 @@ DELETE /api/buildings/:id
 **Building**
 ```json
 {
-	"_id": "bld123",
+	"_id": "bld_123",
 	"name": "Sunrise Apartments",
 	"address": "Kilimani, Nairobi",
 	"gps": { "lat": -1.2921, "lng": 36.8219 },
 	"owner": "John Doe",
-	"staffId": "staff_987",				 // caretaker or agent id
 	"staffName": "Peter Mwangi",
 	"staffPhone": "+254712345678",
 	"notes": "Rooftop antenna installed",

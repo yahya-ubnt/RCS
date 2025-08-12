@@ -1,20 +1,17 @@
-require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/db');
 
 // Import routes
 const leadRoutes = require('./routes/leadRoutes');
-const staffRoutes = require('./routes/staffRoutes');
-const referralRoutes = require('./routes/referralRoutes');
 const buildingRoutes = require('./routes/buildingRoutes');
 const unitRoutes = require('./routes/unitRoutes');
+const userRoutes = require('./routes/userRoutes');
+
+const caretakerAgentRoutes = require('./routes/caretakerAgentRoutes');
 
 // Mount unit routes under building routes
 buildingRoutes.use('/:buildingId/units', unitRoutes);
 
-const payoutRoutes = require('./routes/payoutRoutes');
-const commissionRoutes = require('./routes/commissionRoutes');
-const adminRoutes = require('./routes/adminRoutes'); // For authentication
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,22 +29,19 @@ app.get('/', (req, res) => {
 
 // Mount routes
 app.use('/api/leads', leadRoutes);
-app.use('/api/staff', staffRoutes);
-app.use('/api/referrals', referralRoutes);
 app.use('/api/buildings', buildingRoutes);
 app.use('/api/units', unitRoutes);
-app.use('/api/payouts', payoutRoutes);
-app.use('/api/commissions', commissionRoutes);
-app.use('/api/admin', adminRoutes); // Admin routes for authentication
+app.use('/api/users', userRoutes);
+
+app.use('/api/staff', caretakerAgentRoutes);
+
 
 // Simple GET routes for testing wiring
-app.get('/api/test/agents', (req, res) => res.json({ message: 'GET /api/agents endpoint is wired.' }));
-app.get('/api/test/referrals', (req, res) => res.json({ message: 'GET /api/referrals endpoint is wired.' }));
 app.get('/api/test/buildings', (req, res) => res.json({ message: 'GET /api/buildings endpoint is wired.' }));
 app.get('/api/test/units', (req, res) => res.json({ message: 'GET /api/units endpoint is wired.' }));
-app.get('/api/test/payouts', (req, res) => res.json({ message: 'GET /api/payouts endpoint is wired.' }));
-app.get('/api/test/commissions', (req, res) => res.json({ message: 'GET /api/commissions endpoint is wired.' }));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+module.exports = app; // For testing purposes
