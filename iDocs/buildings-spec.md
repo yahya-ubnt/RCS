@@ -33,12 +33,14 @@ Manage all building information for door-to-door campaigns and partner tracking.
 **Form Fields**
 - **Building Name** — `string` — *required*
 - **Address** — `string` — *required*
-- **GPS Coordinates** — `{ lat: number, lng: number }` — *optional*
+- **Location Input** — `string` or interactive map component — *optional* **[UPDATED: User-friendly location input]**
+  - *Description:* Allow users to input location via text (address) or by dropping a pin on an interactive map. This should translate to `gps` coordinates (`{ lat: number, lng: number }`) for the backend.
 - **Owner / Landlord Name** — `string` — *optional*
 - **Assigned Caretaker/Agent Name** — `string` — *required* (manually entered)
 - **Assigned Caretaker/Agent Contact** — `string` — *required* (phone, manually entered)
 - **Description / Notes** — `string` — *optional*
-- **Upload Building Image(s)** — file upload — *optional*
+- **Upload Building Image(s)** — file upload — *optional* **[UPDATED: Explicitly added for clarity]**
+  - *Description:* Allow users to upload one or more images related to the building. These should be stored as URLs in the `images` array on the backend.
 - **Total Units** — `number` — *optional*
 - **Providers in Building** — `string[]` (multi-select or free text) — *optional*
 
@@ -72,6 +74,10 @@ PUT /api/buildings/:id
 - Address (click-to-open map)
 - Caretaker/Agent Name + Contact (click-to-call / WhatsApp)
 - Providers in Building (chip list)
+- **Description / Notes:** Display the full notes/comments for the building. **[UPDATED: Added notes/comments]**
+- **Owner / Landlord Name:** Display the owner/landlord name. **[UPDATED: Added owner/landlord]**
+- **Total Units:** Display the total number of units. **[UPDATED: Added total units]**
+- **Additional Images:** Display a gallery or carousel of all uploaded building images. **[UPDATED: Added image gallery]**
 
 ---
 
@@ -120,9 +126,3 @@ totalUnits computed from Units collection.
 providers is an array; show as chips in UI.
 
 Building-level status (visited/provider) is not stored — per-unit provider/status handled in Units.
-
-
-
----
-
----

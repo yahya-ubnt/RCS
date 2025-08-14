@@ -12,10 +12,8 @@
 //   MPESA_CONSUMER_SECRET: process.env.MPESA_CONSUMER_SECRET,
 // };
 
-require('dotenv').config({ path: './backend/.env' });
-
 module.exports = {
-  MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/referral_system_dev',
+  MONGO_URI: 'mongodb://localhost:27017/referral_system_dev',
   JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret_here',
   SMS_API_KEY: process.env.SMS_API_KEY,
   MPESA_CONSUMER_KEY: process.env.MPESA_CONSUMER_KEY,
